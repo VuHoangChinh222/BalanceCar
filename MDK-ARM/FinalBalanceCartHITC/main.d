@@ -30,7 +30,6 @@ finalbalancecarthitc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_t
 finalbalancecarthitc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 finalbalancecarthitc\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 finalbalancecarthitc\main.o: ../MDK-ARM/mpu6050.h
-finalbalancecarthitc\main.o: ../MDK-ARM/kalman.h
 finalbalancecarthitc\main.o: ../MDK-ARM/pid.h
 finalbalancecarthitc\main.o: ../MDK-ARM/motor_control.h
 finalbalancecarthitc\main.o: ../MDK-ARM/encoder.h

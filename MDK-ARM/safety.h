@@ -13,6 +13,7 @@ void Safety_Init(void);
  */
 bool Safety_CheckTiltAngle(float angle, float maxAngle);
 
+void Safety_TimerCheck(void);
 /**
  * @brief Cap nhat trang thái an toàn.
  * @param isSafe Trang thái an toàn hien tai (true = an toàn, false = khong giòn).

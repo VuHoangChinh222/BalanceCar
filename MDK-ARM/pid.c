@@ -22,7 +22,12 @@ float PID_Compute(PID_Controller *pid, float currentAngle, float targetAngle) {
     pid->prevError = error;
 
     float output = pid->Kp * error + pid->Ki * pid->integral + pid->Kd * derivative;
-    return output;
+		if(output<-1000)
+			return -1000;
+		else if(output>1000)
+			return 1000;
+		else
+			return output;
 }
 
 /* Ğoc thông so PID tu Flash */
@@ -53,7 +58,7 @@ void PID_AutoTune(PID_Controller *pid, float getAngle, void (*setMotorSpeed)(flo
 //    uint32_t lastTime = startTime;
 
     // Tang dan de gain toi khi xe dao dong liên tuc
-    float testKp = 15.0f;  // Start tu giá tri Kp nho
+    float testKp = 1.0f;  // Start tu giá tri Kp nho
     pid->Kp = testKp;
     pid->Ki = 0;  // Tat tích phân
     pid->Kd = 0;  // Tat vi phân

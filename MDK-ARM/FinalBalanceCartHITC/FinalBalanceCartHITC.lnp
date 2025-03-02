@@ -20,7 +20,6 @@
 "finalbalancecarthitc\stm32f1xx_hal_uart.o"
 "finalbalancecarthitc\system_stm32f1xx.o"
 "finalbalancecarthitc\mpu6050.o"
-"finalbalancecarthitc\kalman.o"
 "finalbalancecarthitc\pid.o"
 "finalbalancecarthitc\motor_control.o"
 "finalbalancecarthitc\encoder.o"

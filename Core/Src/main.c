@@ -22,7 +22,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "mpu6050.h"
-#include "kalman.h"
 #include "pid.h"
 #include "motor_control.h"
 #include "encoder.h"
@@ -53,20 +52,16 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 // PID & Kalman Filter
+MPU6050_t mpu6050;
 Encoder motor1Encoder;
 Encoder motor2Encoder;
 PID_Controller pidRoll;
-//Filter cho goc X
-KalmanFilter kalmanPitch;
-//Filter cho goc Y
-KalmanFilter kalmanRoll;
-MPU6050_Data mpuData;
-
 
 /* USER CODE END PV */
 
@@ -78,6 +73,7 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 // Ham lay thoi gian hien tai
 uint32_t millis(void) {
@@ -111,7 +107,8 @@ void LogData(float angle, float speedL, float speedR, int16_t enc1, int16_t enc2
 // Thong so PID
 float filteredAngleX,filteredAngleY;
 const float tiltLimit = 30.0f;  // Nguong goc nga toi da
-int16_t convertAngleXToInt,convertAngleYToInt;
+float speed;
+uint8_t stop=0;
 /* USER CODE END 0 */
 
 /**
@@ -148,13 +145,19 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+	HAL_TIM_Base_Start_IT(&htim4);
 		// Khoi tao module
     MPU6050_Init(&hi2c1);
+		HAL_Delay(100);
     Motor_Init();
-    Safety_Init();
+    Safety_Init(); //lỗi
 		Encoder_Init(&motor1Encoder, &htim2);
     Encoder_Init(&motor2Encoder, &htim3);
+		
+		//PID
+		PID_Init(&pidRoll, 5.0f, 0.01f, 1.2f);
 		
     // Doc thong so PID tu Flash
     PID_LoadFromFlash(&pidRoll);
@@ -166,13 +169,7 @@ int main(void)
     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);  // Encoder motor 2
 		
 		uint32_t lastTime = millis();
-		MPU6050_Read_All(&hi2c1, &mpuData);
-		//Lay gia tri goc X
-		float pitch = MPU6050_GetPitch(&mpuData);
-		Kalman_Init(&kalmanPitch,pitch);
-		//Lay gia tri goc Y
-		float rool= MPU6050_GetRoll(&mpuData);
-		Kalman_Init(&kalmanRoll, rool);
+		MPU6050_Read_All(&hi2c1, &mpu6050);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -185,34 +182,24 @@ int main(void)
 		uint32_t now = HAL_GetTick();
     float dt = (now - lastTime) / 1000.0f;
     lastTime = now;
+		
     // Loc goc nghieng voi Kalman
-		MPU6050_Read_All(&hi2c1, &mpuData);
+		MPU6050_Read_All(&hi2c1, &mpu6050);
 		//Lay goc cua X
-    pitch = MPU6050_GetPitch(&mpuData);
-		filteredAngleX =  Kalman_Update(&kalmanPitch, pitch, mpuData.gyroX, dt);	
-		convertAngleXToInt=INT16_C(filteredAngleX);
+		filteredAngleX = mpu6050.KalmanAngleX;
 		//Lay gia tri goc Y
-		rool=MPU6050_GetRoll(&mpuData);
-    filteredAngleY =  Kalman_Update(&kalmanRoll, rool, mpuData.gyroY, dt);
-		convertAngleYToInt=INT16_C(filteredAngleY);
-    // Kiem tra nga
-//    if (Safety_CheckTiltAngle(filteredAngle, tiltLimit)) {
-//			Safety_TriggerWarning();
-//			continue;
-//		}
-//    // Xu ly Auto-tune khi bam nut
-//    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == GPIO_PIN_RESET) {
-//       PID_AutoTune(&pidRoll,filteredAngle, SetMotorSpeed);
-//    }
-//    // Tinh toan toc do tu PID
-//    float speed = PID_Compute(&pidRoll, filteredAngle, 0.0f);
-//    Motor_SetSpeed(speed, speed);
-//    // Doc toc do encoder
-//    int16_t speed1 = Encoder_GetSpeed(&motor1Encoder);
-//    int16_t speed2 = Encoder_GetSpeed(&motor2Encoder);
+    filteredAngleY =  mpu6050.KalmanAngleY;
 
-//    // Debug (neu co UART)
-//    printf("Angle: %.2f, Speed1: %d, Speed2: %d\n", filteredAngle, speed1, speed2);
+    // Tinh toan toc do tu PID
+    speed = PID_Compute(&pidRoll, filteredAngleX, 0.f);
+		if(stop==0)
+			Motor_SetSpeed(speed, speed);
+    // Doc toc do encoder
+    int16_t speed1 = Encoder_GetSpeed(&motor1Encoder);
+    int16_t speed2 = Encoder_GetSpeed(&motor2Encoder);
+
+    // Debug (neu co UART)
+    printf("Angle: %.2f, Speed1: %d, Speed2: %d\n", filteredAngleX, speed1, speed2);
 	}
   /* USER CODE END 3 */
 }
@@ -468,6 +455,51 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 7199;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 999;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -547,7 +579,20 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+    if (htim->Instance == TIM4) {
+//        if(Safety_CheckTiltAngle(filteredAngleX,tiltLimit)){
+//					stop=1;
+//				}else{
+//					stop=0;
+//				}  // Kiem tra goc 30 do moi 10ms
+//				
+				// Xu ly Auto-tune khi bam nut
+				if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == GPIO_PIN_RESET) {
+					PID_AutoTune(&pidRoll,filteredAngleX, SetMotorSpeed);
+				}
+    }
+}
 /* USER CODE END 4 */
 
 /**

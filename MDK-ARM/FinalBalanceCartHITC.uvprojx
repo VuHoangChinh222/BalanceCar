@@ -509,11 +509,6 @@
               <FilePath>.\mpu6050.h</FilePath>
             </File>
             <File>
-              <FileName>kalman.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\kalman.h</FilePath>
-            </File>
-            <File>
               <FileName>pid.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\pid.h</FilePath>
@@ -547,11 +542,6 @@
               <FileName>mpu6050.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\mpu6050.c</FilePath>
-            </File>
-            <File>
-              <FileName>kalman.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\kalman.c</FilePath>
             </File>
             <File>
               <FileName>pid.c</FileName>

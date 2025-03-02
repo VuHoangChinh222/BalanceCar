@@ -1,5 +1,7 @@
 finalbalancecarthitc\mpu6050.o: mpu6050.c
+finalbalancecarthitc\mpu6050.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 finalbalancecarthitc\mpu6050.o: mpu6050.h
+finalbalancecarthitc\mpu6050.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 finalbalancecarthitc\mpu6050.o: ../Core/Inc/stm32f1xx_hal_conf.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h
@@ -7,7 +9,6 @@ finalbalancecarthitc\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ha
 finalbalancecarthitc\mpu6050.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/CMSIS/Include/core_cm3.h
-finalbalancecarthitc\mpu6050.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/CMSIS/Include/cmsis_version.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -29,4 +30,3 @@ finalbalancecarthitc\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ha
 finalbalancecarthitc\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 finalbalancecarthitc\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-finalbalancecarthitc\mpu6050.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
